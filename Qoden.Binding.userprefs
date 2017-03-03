@@ -1,0 +1,16 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Qoden.Binding/Qoden.Binding.csproj">
+    <Files>
+      <File FileName="Qoden.Binding/project.json" Line="4" Column="36" />
+      <File FileName="Qoden.Binding/Qoden.Binding/BindingList.cs" Line="3" Column="13" />
+      <File FileName="Qoden.Binding/Qoden.Binding/ValidatorBindings.cs" Line="8" Column="31" />
+      <File FileName="Qoden.Binding/Qoden.Binding.csproj" Line="46" Column="3" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>

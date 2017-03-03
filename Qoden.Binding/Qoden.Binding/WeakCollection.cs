@@ -76,7 +76,7 @@ namespace Qoden.Binding
         /// </summary>
         public WeakCollection()
         {
-            this.list = new List<WeakReference<T>>();
+            list = new List<WeakReference<T>>();
         }
 
         /// <summary>
@@ -86,8 +86,8 @@ namespace Qoden.Binding
         {
             get
             {
-                List<T> ret = new List<T>(this.list.Count);
-                ret.AddRange(this.UnsafeLiveList);
+                List<T> ret = new List<T>(list.Count);
+                ret.AddRange(UnsafeLiveList);
                 return ret;
             }
         }
@@ -99,7 +99,7 @@ namespace Qoden.Binding
         {
             get
             {
-                return this.list.Select(x => {
+                return list.Select(x => {
                     T val = null;
                     x.TryGetTarget(out val);
                     return val;
@@ -114,7 +114,7 @@ namespace Qoden.Binding
         {
             get
             {
-                return this.CompleteList.Where(x => x != null);
+                return CompleteList.Where(x => x != null);
             }
         }
 
@@ -125,7 +125,7 @@ namespace Qoden.Binding
         {
             get
             {
-                return this.list.Count;
+                return list.Count;
             }
         }
 
@@ -136,7 +136,7 @@ namespace Qoden.Binding
         {
             get
             {
-                return this.CompleteList.Count(x => x == null);
+                return CompleteList.Count(x => x == null);
             }
         }
 
@@ -147,7 +147,7 @@ namespace Qoden.Binding
         {
             get
             {
-                return this.UnsafeLiveList.Count();
+                return UnsafeLiveList.Count();
             }
         }
 
@@ -158,7 +158,7 @@ namespace Qoden.Binding
         {
             get
             {
-                return this.CompleteList.Count(x => x != null);
+                return CompleteList.Count(x => x != null);
             }
         }
 
@@ -169,7 +169,7 @@ namespace Qoden.Binding
         /// </summary>
         int ICollection<T>.Count
         {
-            get { return this.LiveCount; }
+            get { return LiveCount; }
         }
 
         /// <summary>
@@ -193,9 +193,9 @@ namespace Qoden.Binding
                 //  Some other implementations seen in the wild have O(n*m) time, where m is the number of dead entries.
                 //  As m approaches n (e.g., mass object extinctions), their running time approaches O(n^2).
                 int writeIndex = 0;
-                for (int readIndex = 0; readIndex != this.list.Count; ++readIndex)
+                for (int readIndex = 0; readIndex != list.Count; ++readIndex)
                 {
-                    WeakReference<T> weakReference = this.list[readIndex];
+                    WeakReference<T> weakReference = list[readIndex];
                     T weakDelegate = null;
                     weakReference.TryGetTarget(out weakDelegate);
                     if (weakDelegate != null)
@@ -204,14 +204,14 @@ namespace Qoden.Binding
 
                         if (readIndex != writeIndex)
                         {
-                            this.list[writeIndex] = this.list[readIndex];
+                            list[writeIndex] = list[readIndex];
                         }
 
                         ++writeIndex;
                     }
                 }
 
-                this.list.RemoveRange(writeIndex, this.list.Count - writeIndex);
+                list.RemoveRange(writeIndex, list.Count - writeIndex);
             }
         }
 
@@ -221,7 +221,7 @@ namespace Qoden.Binding
         /// <param name="item">The object to add a weak reference to.</param>
         public void Add(T item)
         {
-            this.list.Add(new WeakReference<T>(item));
+            list.Add(new WeakReference<T>(item));
         }
 
         /// <summary>
@@ -231,14 +231,14 @@ namespace Qoden.Binding
         /// <returns>True if the object was found and removed; false if the object was not found.</returns>
         public bool Remove(T item)
         {
-            for (int i = 0; i != this.list.Count; ++i)
+            for (int i = 0; i != list.Count; ++i)
             {
-                WeakReference<T> weakReference = this.list[i];
+                WeakReference<T> weakReference = list[i];
                 T weakDelegate = null;
                 weakReference.TryGetTarget(out weakDelegate);
                 if (weakDelegate == item)
                 {
-                    this.list.RemoveAt(i);
+                    list.RemoveAt(i);
                     weakReference.SetTarget(null);
                     return true;
                 }
@@ -253,7 +253,7 @@ namespace Qoden.Binding
         public void Purge()
         {
             // We cannot simply use List<T>.RemoveAll, because the predicate "x => !x.IsAlive" is not stable.
-            IEnumerator<T> enumerator = this.UnsafeLiveList.GetEnumerator();
+            IEnumerator<T> enumerator = UnsafeLiveList.GetEnumerator();
             while (enumerator.MoveNext())
             {
             }
@@ -264,7 +264,7 @@ namespace Qoden.Binding
         /// </summary>
         public void Dispose()
         {
-            this.Clear();
+            Clear();
         }
 
         /// <summary>
@@ -272,12 +272,12 @@ namespace Qoden.Binding
         /// </summary>
         public void Clear()
         {
-            foreach (WeakReference<T> weakReference in this.list)
+            foreach (WeakReference<T> weakReference in list)
             {
                 weakReference.SetTarget(null);
             }
 
-            this.list.Clear();
+            list.Clear();
         }
 
         #region ICollection<T> Methods
@@ -289,7 +289,7 @@ namespace Qoden.Binding
         /// <returns>True if the collection contains a specific value; false if it does not.</returns>
         bool ICollection<T>.Contains(T item)
         {
-            return this.LiveListWithoutPurge.Contains(item);
+            return LiveListWithoutPurge.Contains(item);
         }
 
         /// <summary>
@@ -299,8 +299,8 @@ namespace Qoden.Binding
         /// <param name="arrayIndex">The index to begin writing into the array.</param>
         void ICollection<T>.CopyTo(T[] array, int arrayIndex)
         {
-            List<T> ret = new List<T>(this.list.Count);
-            ret.AddRange(this.UnsafeLiveList);
+            List<T> ret = new List<T>(list.Count);
+            ret.AddRange(UnsafeLiveList);
             ret.CopyTo(array, arrayIndex);
         }
 
@@ -314,7 +314,7 @@ namespace Qoden.Binding
         /// <returns>The sequence of live objects.</returns>
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            return this.LiveList.GetEnumerator();
+            return LiveList.GetEnumerator();
         }
 
         #endregion
