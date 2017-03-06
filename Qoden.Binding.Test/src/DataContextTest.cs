@@ -1,52 +1,53 @@
 ﻿using Qoden.Validation;
-using Xunit;
-using Assert = Xunit.Assert;
+using NUnit.Framework;
+using Assert = NUnit.Framework.Assert;
 
 namespace Qoden.Binding.Test
 {
+	[TestFixture]
     public class DataContextTest
     {
-        private TestContext ValidContext()
-        {
-            return new TestContext
-            {
-                Id = "Some Id",
-                Industry = "Finance",
-                Name = "Andrew"
-            };
-        }
-
-        [Fact]
+        [Test]
         public void PropertyChanges()
         {
             var ctx = new TestContext();
-            Assert.True(ctx.HasErrors);
+            Assert.True(ctx.HasErrors, "Valid/Invalid state indicated correctly right after data context instantiated");
             Assert.NotNull(ctx.GetErrors("Id"));
             ctx.Id = "Some Id";
             ctx.Industry = "Finance";
             ctx.Name = "Andrew";
-            Assert.False(ctx.HasErrors);
+            Assert.False(ctx.HasErrors, "Property changes affect context validtity status");
         }
 
-        [Fact]
+        [Test]
         public void PropertyChangeEvents()
         {
             var ctx = new TestContext();
             var propertyName = "";
             ctx.PropertyChanged += (o, e) => { propertyName = e.PropertyName; };
             ctx.Name = "Andrew";
-            Assert.Equal(propertyName, "Name");
+            Assert.AreEqual(propertyName, "Name", "Thanks to Field support property change events raised automatically");
         }
 
-        [Fact]
+        [Test]
         public void NoPropertyChangeDuringValidation()
         {
             var ctx = ValidContext();
             var propertyName = "";
             ctx.PropertyChanged += (o, e) => { propertyName = e.PropertyName; };
             ctx.Validate();
-            Assert.Equal(propertyName, "");
+            Assert.AreEqual(propertyName, "", "Property change events not raised during validation");
         }
+
+		private TestContext ValidContext()
+		{
+			return new TestContext
+			{
+				Id = "Some Id",
+				Industry = "Finance",
+				Name = "Andrew"
+			};
+		}
     }
 
     public class MyDto
