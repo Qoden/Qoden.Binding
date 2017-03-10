@@ -42,7 +42,7 @@ namespace Qoden.Binding
 		{
 			if (_monitor.Busy && CollectionChanged != null && CollectionChanged.GetInvocationList().Length > 1)
 			{
-				throw new InvalidOperationException("Cannot change ObservableCollection during a CollectionChanged event.");
+				throw new InvalidOperationException("Cannot change ObservableList during a CollectionChanged event.");
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace Qoden.Binding
 		{
 			CheckReentrancy();
 			T t = base[oldIndex];
-			RemoveItem(oldIndex);
+			base.RemoveItem(oldIndex);
 			base.InsertItem(newIndex, t);
 			OnPropertyChanged("Item[]");
 			OnCollectionChanged(NotifyCollectionChangedAction.Move, t, newIndex, oldIndex);

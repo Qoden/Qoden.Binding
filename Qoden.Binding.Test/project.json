@@ -1,7 +1,7 @@
 ﻿{
 	"dependencies": {
 		"NUnit":"2.6.4",
-		"Qoden.Validation":"1.0.0-*"
+		"Qoden.Validation":"1.0.0-beta-*"
 	},
 	"frameworks":{
 		"net45": {
@@ -11,5 +11,7 @@
 			"imports":"netstandard1.6"
 		}
 	},
-	"runtimes": { "win": { } }
+	"runtimes": { 
+		"win": { } 
+	}
 }

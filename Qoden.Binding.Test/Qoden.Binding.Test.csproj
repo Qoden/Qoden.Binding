@@ -35,6 +35,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\DataContextTest.cs" />
+    <Compile Include="src\ObservableListTest.cs" />
+    <Compile Include="src\BindingListTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
