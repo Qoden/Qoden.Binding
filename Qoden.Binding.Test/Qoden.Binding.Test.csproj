@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.8-rc" />
     <PackageReference Include="MSTest.TestFramework" Version="1.0.8-rc" />
-    <PackageReference Include="Qoden.Validation" Version="1.0.0-beta-*" />
+    <PackageReference Include="Qoden.Validation" Version="1.0.0-b*" />
   </ItemGroup>
 
 </Project>
