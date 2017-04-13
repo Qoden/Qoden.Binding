@@ -6,15 +6,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using NUnit.Framework;
+using Qoden.Binding;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #pragma warning disable RECS0026 // Possible unassigned object created by 'new'			
 namespace Qoden.Binding.Test
 {
-	[TestFixture]
+	[TestClass]
 	public class ObservableListTest
 	{
-		[Test]
+		[TestMethod]
 		public void Constructor()
 		{
 			var list = new List<int> { 3 };
@@ -27,7 +28,7 @@ namespace Qoden.Binding.Test
 			Assert.AreEqual(1, list.Count, "#2");
 		}
 
-		[Test]
+		[TestMethod]
 		public void Constructor_Invalid()
 		{
 
@@ -52,7 +53,7 @@ namespace Qoden.Binding.Test
 			}
 		}
 
-		[Test]
+		[TestMethod]
 		public void Insert()
 		{
 			bool reached = false;
@@ -71,7 +72,7 @@ namespace Qoden.Binding.Test
 			Assert.IsTrue(reached, "INS_5");
 		}
 
-		[Test]
+		[TestMethod]
 		public void RemoveAt()
 		{
 			bool reached = false;
@@ -91,7 +92,7 @@ namespace Qoden.Binding.Test
 			Assert.IsTrue(reached, "REMAT_7");
 		}
 
-		[Test]
+		[TestMethod]
 		public void Move()
 		{
 			bool reached = false;
@@ -115,7 +116,7 @@ namespace Qoden.Binding.Test
 			Assert.IsTrue(reached, "MOVE_8");
 		}
 
-		[Test]
+		[TestMethod]
 		public void Add()
 		{
 			ObservableList<char> collection = new ObservableList<char>();
@@ -143,7 +144,7 @@ namespace Qoden.Binding.Test
 			CollectionChangedEventValidators.ValidateAddOperation(args, new char[] { 'A' }, 0, "ADD_4");
 		}
 
-		[Test]
+		[TestMethod]
 		public void Remove()
 		{
 			ObservableList<char> collection = new ObservableList<char>();
@@ -175,7 +176,7 @@ namespace Qoden.Binding.Test
 			CollectionChangedEventValidators.ValidateRemoveOperation(args, new char[] { 'B' }, 1, "REM_4");
 		}
 
-		[Test]
+		[TestMethod]
 		public void Set()
 		{
 			ObservableList<char> collection = new ObservableList<char>();
@@ -206,7 +207,7 @@ namespace Qoden.Binding.Test
 			CollectionChangedEventValidators.ValidateReplaceOperation(args, new char[] { 'C' }, new char[] { 'I' }, 2, "SET_3");
 		}
 
-		[Test]
+		[TestMethod]
 		public void Reentrant()
 		{
 			ObservableList<char> collection = new ObservableList<char>();
@@ -312,7 +313,7 @@ namespace Qoden.Binding.Test
 			}
 		}
 
-		[Test]
+		[TestMethod]
 		public void ReentrantReuseObject()
 		{
 			ObservableListTestHelper helper = new ObservableListTestHelper();
@@ -320,7 +321,7 @@ namespace Qoden.Binding.Test
 			helper.DoubleEnterReentrant();
 		}
 
-		[Test]
+		[TestMethod]
 		public void Clear()
 		{
 			List<char> initial = new List<char>();

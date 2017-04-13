@@ -1,25 +1,25 @@
 ﻿using Qoden.Validation;
-using NUnit.Framework;
-using Assert = NUnit.Framework.Assert;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Qoden.Binding.Test
 {
-	[TestFixture]
+	[TestClass]
     public class DataContextTest
     {
-        [Test]
+        [TestMethod]
         public void PropertyChanges()
         {
             var ctx = new TestContext();
-            Assert.True(ctx.HasErrors, "Valid/Invalid state indicated correctly right after data context instantiated");
-            Assert.NotNull(ctx.GetErrors("Id"));
+            Assert.IsTrue(ctx.HasErrors, "Valid/Invalid state indicated correctly right after data context instantiated");
+            Assert.IsNotNull(ctx.GetErrors("Id"));
             ctx.Id = "Some Id";
             ctx.Industry = "Finance";
             ctx.Name = "Andrew";
-            Assert.False(ctx.HasErrors, "Property changes affect context validtity status");
+            Assert.IsFalse(ctx.HasErrors, "Property changes affect context validtity status");
         }
 
-        [Test]
+		[TestMethod]
         public void PropertyChangeEvents()
         {
             var ctx = new TestContext();
@@ -29,7 +29,7 @@ namespace Qoden.Binding.Test
             Assert.AreEqual(propertyName, "Name", "Thanks to Field support property change events raised automatically");
         }
 
-        [Test]
+		[TestMethod]
         public void NoPropertyChangeDuringValidation()
         {
             var ctx = ValidContext();

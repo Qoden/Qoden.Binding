@@ -1,12 +1,13 @@
 ﻿using System;
-using NUnit.Framework;
+using Qoden.Binding;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Qoden.Binding.Test
 {
-	[TestFixture]
+	[TestClass]
 	public class BindingListTest
 	{
-		[Test]
+		[TestMethod]
 		public void Constructor()
 		{
 			var bl = new BindingList();
@@ -22,19 +23,19 @@ namespace Qoden.Binding.Test
 			//Bound
 		}
 
-		[Test]
+		[TestMethod]
 		public void Add()
 		{
 			
 		}
 
-		[Test]
+		[TestMethod]
 		public void Remove()
 		{
 			
 		}
 
-		[Test]
+		[TestMethod]
 		public void Clear()
 		{
 			

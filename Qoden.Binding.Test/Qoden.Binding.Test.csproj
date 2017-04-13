@@ -1,52 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AC74AFD0-3246-456A-BB33-4FAA7748E593}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Qoden.Binding.Test</RootNamespace>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <DebugType>portable</DebugType>
     <AssemblyName>Qoden.Binding.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <PackageId>Qoden.Binding.Test</PackageId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50;portable-net45+win8</PackageTargetFallback>
+    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="../Qoden.Binding/Qoden.Binding.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Folder Include="src\" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.8-rc" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.0.8-rc" />
+    <PackageReference Include="Qoden.Validation" Version="1.0.0-beta-*" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="src\DataContextTest.cs" />
-    <Compile Include="src\ObservableListTest.cs" />
-    <Compile Include="src\BindingListTest.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
-    <None Include="Qoden.Binding.Test.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Qoden.Binding\Qoden.Binding.csproj">
-      <Project>{5D196C87-1190-434D-ADBE-0D2291C71856}</Project>
-      <Name>Qoden.Binding</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+
 </Project>
