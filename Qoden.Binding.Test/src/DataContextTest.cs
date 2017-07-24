@@ -1,5 +1,5 @@
-﻿using Qoden.Validation;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Qoden.Validation;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Qoden.Binding.Test

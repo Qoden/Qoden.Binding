@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Qoden.Reflection;
+using Qoden.Util;
 
 #if __ANDROID__
 using Android.Text;
@@ -55,25 +56,22 @@ namespace Qoden.Binding
         int subscriptions = 0;
 
         public EventHandlerSource(RuntimeEvent @event, object owner)
-        {
+        {            
             this.@event = @event;
             this.owner = owner;
 
             eventHandler = @event.CreateDelegate(this, HandleOwnerEventMethodInfo);
         }
 
+        [Preserve]
         void HandleOwnerEvent(object sender, EventArgs args)
         {
-            if (handler != null)
-            {
-                handler(sender, args);
-            }
+            handler?.Invoke(sender, args);
         }
 
         public void SetEnabled(bool enabled)
         {
-            if (SetEnabledAction != null)
-                SetEnabledAction(Owner, enabled);
+            SetEnabledAction?.Invoke(Owner, enabled);
         }
 
         public Func<object, EventArgs, object> ParameterExtractor { get; set; }

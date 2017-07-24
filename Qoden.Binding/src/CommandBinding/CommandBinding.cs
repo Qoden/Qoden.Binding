@@ -100,8 +100,12 @@ namespace Qoden.Binding
 
 		protected virtual void OnBind ()
 		{
+            Assert.State(Source).NotNull("Source is not set");
 			Source.CanExecuteChanged += Source_CanExecuteChanged;
+
+            Assert.State(Target).NotNull("Target is not set");
 			Target.Handler += Target_ExecuteCommand;
+
 			var asyncCommand = Source as IAsyncCommand;
 			if (asyncCommand != null) {
 				asyncCommand.PropertyChanged += AsyncCommand_PropertyChanged;

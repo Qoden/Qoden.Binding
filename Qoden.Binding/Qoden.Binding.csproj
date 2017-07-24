@@ -1,27 +1,26 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard1.4</TargetFramework>
-    <DefineConstants>$(DefineConstants);__NET_CORE__</DefineConstants>
-    <AssemblyName>Qoden.Binding</AssemblyName>
-    <PackageId>Qoden.Binding</PackageId>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81</PackageTargetFallback>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>1.0.0</PackageVersion>
-    <Authors>Qoden Technologies</Authors>
-    <Description>Cross platform classes to enable extensible MVVM and simple data binding.</Description>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Qoden.Reflection" Version="1.0.0" />
-    <PackageReference Include="Qoden.Validation" Version="1.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Qoden.Binding.csproj" />
-  </ItemGroup>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard1.4</TargetFramework>
+		<DefineConstants>$(DefineConstants);__NET_CORE__</DefineConstants>
+		<AssemblyName>Qoden.Binding</AssemblyName>
+		<PackageId>Qoden.Binding</PackageId>
+		<PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81</PackageTargetFallback>
+		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+		<PackOnBuild>true</PackOnBuild>
+		<PackageVersion>1.0.1</PackageVersion>
+		<Authors>Qoden Technologies</Authors>
+		<Description>Cross platform classes to enable extensible MVVM and simple data binding.</Description>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Qoden.Reflection" Version="1.0.0" />
+		<PackageReference Include="Qoden.Validation" Version="1.0.2" />
+		<PackageReference Include="Qoden.Util" Version="1.0.4" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Qoden.Binding.csproj" />
+	</ItemGroup>
 </Project>
