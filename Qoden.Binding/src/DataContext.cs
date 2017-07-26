@@ -5,15 +5,16 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Qoden.Validation;
 using Qoden.Reflection;
+using System.Reflection;
 
 namespace Qoden.Binding
 {
-    public interface IDataContext : INotifyPropertyChanged, INotifyDataErrorInfo	
-	{
-		IValidator Validator { get; }
+    public interface IDataContext : INotifyPropertyChanged, INotifyDataErrorInfo
+    {
+        IValidator Validator { get; }
 
-		bool Validate();
-	}
+        bool Validate();
+    }
 
     /// <summary>
     /// Holds data and objects to be displayed or edited.
@@ -21,28 +22,133 @@ namespace Qoden.Binding
     /// <remarks>
     /// <see cref="DataContext"/> provides minimal infrastructure for interactive object editing. 
     /// </remarks>
-    public class DataContext : IDataContext
-	{
-	    private Validator _validator;
+    public class DataContext : IDataContext, IEditableObject
+    {
+        Validator _validator;
+        Dictionary<string, object> _originals;
+        IKeyValueCoding _kvc;
+
+        public DataContext()
+        {
+            _kvc = KeyValueCoding.Impl(GetType());
+        }
+
+        protected void RememberAndBeginEdit([CallerMemberName] string key = null)
+        {
+            if (!Editing)
+            {
+                BeginEdit();
+            }
+            Remember(key);
+        }
+
+        protected void Remember([CallerMemberName] string key = null)
+        {
+            if (Editing)
+            {
+                if (!_originals.ContainsKey(key))
+                {
+                    _originals[key] = _kvc.Get(this, key);
+                    if (_originals.Count == 1)
+                    {
+                        RaisePropertyChanged("HasChanges");
+                    }
+                }
+            }
+        }
+
+        public IReadOnlyDictionary<string, object> Changes
+        {
+            get { return _originals; }
+        }
+
+        public bool Editing
+        {
+            get => _originals != null;
+        }
+
+        public bool HasChanges
+        {
+            get => _originals != null && _originals.Count > 0;
+        }
+
+        public void BeginEdit()
+        {
+            if (!Editing)
+            {
+                _originals = new Dictionary<string, object>();
+                OnBeginEdit();
+                RaisePropertyChanged("Editing");
+            }
+        }
+
+        protected virtual void OnBeginEdit()
+        {
+        }
+
+        public void CancelEdit()
+        {
+            if (Editing)
+            {
+                OnCancelEdit();
+                foreach (var kv in _originals)
+                {
+                    _kvc.Set(this, kv.Key, kv.Value);
+                }
+                _originals = null;
+                RaisePropertyChanged("HasChanges");
+                RaisePropertyChanged("Editing");
+            }
+        }
+
+        protected virtual void OnCancelEdit()
+        {
+        }
+
+        public void EndEdit()
+        {
+            if (Editing)
+            {
+                OnEndEdit();
+                _originals = null;
+                RaisePropertyChanged("HasChanges");
+                RaisePropertyChanged("Editing");
+            }
+        }
+
+        protected virtual void OnEndEdit()
+        {
+        }
+
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (Validating || EqualityComparer<T>.Default.Equals(storage, value))
+            {
+                return false;
+            }
+            storage = value;
+            RaisePropertyChanged(propertyName);
+            return true;
+        }
 
         /// <summary>
         /// Get <see cref="DataContext"/> Validator
         /// </summary>
-	    public IValidator Validator
-	    {
-	        get
-	        {
-	            if (_validator == null)
-	            {
-	                _validator = new Validator();
-	                if (!Validating)
-	                {
-	                    Validate();
-	                }
-	            }
-	            return _validator;
-	        }
-	    }
+        public IValidator Validator
+        {
+            get
+            {
+                if (_validator == null)
+                {
+                    _validator = new Validator();
+                    if (!Validating)
+                    {
+                        Validate();
+                    }
+                }
+                return _validator;
+            }
+        }
 
         /// <summary>
         /// Indicate if validation is in process. See <see cref="Validate"/> for details.
@@ -62,48 +168,57 @@ namespace Qoden.Binding
         /// 5. Transition back to normal state.
         /// </remarks>
         /// <returns>true if validation successfull (no errors found)</returns>
-		public bool Validate ()
-		{
-			Validating = true;
-			var properties = Inspection.InstanceProperties (GetType ());
-			try {
-				Validator.Clear();
-				//trigger all properties to generate errors
-				foreach (var p in properties) {
-					if (!p.HasAttribute<DontCallDuringValidationAttribute> () && p.CanWrite && p.CanRead) {
-						var val = Inspection.GetValue (this, p);
-						Inspection.SetValue (this, p, val);
-					}
-				}
-				OnValidate();
-			} finally {
-				foreach (var p in properties) {
-					if (Validator.HasErrorsForKey (p.Name)) {
+		public bool Validate()
+        {
+            Validating = true;
+            var properties = Inspection.InstanceProperties(GetType());
+            try
+            {
+                Validator.Clear();
+                //trigger all properties to generate errors
+                foreach (var p in properties)
+                {
+                    if (!p.HasAttribute<DontCallDuringValidationAttribute>() && p.CanWrite && p.CanRead)
+                    {
+                        var val = _kvc.Get(this, p.Name);
+                        _kvc.Set(this, p.Name, val);
+                    }
+                }
+                OnValidate();
+            }
+            finally
+            {
+                foreach (var p in properties)
+                {
+                    if (Validator.HasErrorsForKey(p.Name))
+                    {
                         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p.Name));
-					}
-				}
-				Validating = false;
-			}
-			return Validator.HasErrors;
-		}
+                    }
+                }
+                Validating = false;
+            }
+            return Validator.HasErrors;
+        }
 
         /// <summary>
         /// Called after <see cref="DataContext"/> properties validated. See <see cref="Validate"/> for details.
         /// </summary>
 		protected virtual void OnValidate()
-		{
-		}
+        {
+        }
 
-		public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Raise <see cref="PropertyChanged"/> event with provided args
         /// </summary>
         /// <param name="key">event arguments</param>
-		protected void RaisePropertyChanged (PropertyChangedEventArgs key)
-		{
+		protected void RaisePropertyChanged(PropertyChangedEventArgs key)
+        {
             if (!Validating)
+            {
                 PropertyChanged?.Invoke(this, key);
+            }
         }
 
         /// <summary>
@@ -120,207 +235,34 @@ namespace Qoden.Binding
         /// </summary>
         /// <typeparam name="T">type of property</typeparam>
         /// <param name="key">property expression</param>
-        protected void RaisePropertyChanged<T> (Expression<Func<T>> key)
-		{
-			RaisePropertyChanged (new PropertyChangedEventArgs(PropertySupport.ExtractPropertyName(key)));
-		}
+        protected void RaisePropertyChanged<T>(Expression<Func<T>> key)
+        {
+            RaisePropertyChanged(new PropertyChangedEventArgs(PropertySupport.ExtractPropertyName(key)));
+        }
 
         /// <summary>
         /// Fired when new <see cref="Validator"/> detect new error or errors removed from <see cref="Validator"/>
         /// </summary>
-		public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged {
-			add { Validator.ErrorsChanged += value; }
-			remove { Validator.ErrorsChanged -= value; }
-		}
+		public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged
+        {
+            add { Validator.ErrorsChanged += value; }
+            remove { Validator.ErrorsChanged -= value; }
+        }
 
         /// <summary>
         /// Convenience method to get errors from <see cref="Validator"/>. Pass null as argument to get all errors.
         /// </summary>
         /// <param name="propertyName">property name</param>
         /// <returns>List of errors for given property</returns>
-		public System.Collections.IEnumerable GetErrors (string propertyName = null)
-		{
-			return Validator.GetErrors (propertyName);
-		}
+		public System.Collections.IEnumerable GetErrors(string propertyName = null)
+        {
+            return Validator.GetErrors(propertyName);
+        }
 
         /// <summary>
         /// Indicate if <see cref="DataContext"/> has errors in it <see cref="Validator"/>.
         /// </summary>
 		public bool HasErrors => Validator.HasErrors;
-
-	    private List<object> _fields;
-
-	    private List<object> Fields => _fields ?? (_fields = new List<object>());
-
-        /// <summary>
-        /// Register a field in <see cref="DataContext"/> with provided value
-        /// </summary>
-        /// <typeparam name="T">type of field</typeparam>
-        /// <returns>new field</returns>
-	    protected Field<T> FieldValue<T> (T value)
-		{
-			var memberField = new Field<T> (value, this);
-			Fields.Add (memberField);
-			return memberField;
-		}
-
-        /// <summary>
-        /// Register a field in <see cref="DataContext"/> with default value
-        /// </summary>
-        /// <typeparam name="T">type of field</typeparam>
-        /// <returns>new field</returns>
-		protected Field<T> FieldValue<T> ()
-		{
-			var memberField = new Field<T> (default(T), this);
-			Fields.Add (memberField);
-			return memberField;
-		}
-
-        /// <summary>
-        /// Wraps piece of data stored in <see cref="DataContext"/> and provides methods to modify it.
-        /// </summary>
-        /// <remarks>
-        /// <see cref="Field{T}"/> objects take care of raising proper <see cref="DataContext.PropertyChanged"/> events and also
-        /// makes it easier to handle property changes during validation (see <see cref="DataContext.Validate"/>)
-        /// </remarks>
-        /// <typeparam name="T">type of underlying object</typeparam>
-		public class Field<T>
-		{
-			private T _value;
-            private IKeyValueCoding _kvc;
-            private readonly DataContext _owner;
-
-			internal Field (DataContext owner)
-			{
-				if (owner == null)
-					throw new ArgumentNullException (nameof(owner));
-				_owner = owner;
-			}
-
-			internal Field (T value, DataContext owner) : this (owner)
-			{
-				SetValue(value);
-			}
-
-            /// <summary>
-            /// Set field value wihtout raising <see cref="DataContext.PropertyChanged"/> event.
-            /// </summary>
-			public virtual T Value {
-				get { return _value; }
-				set {
-				    SetValue(value);
-				}
-			}
-
-		    private void SetValue(T value)
-		    {
-		        _value = value;
-		        if (value is ValueType)
-		        {
-		            _kvc = KeyValueCoding.Impl(value);
-		        }
-		        else
-		        {
-		            _kvc = ReferenceEquals(null, value) ? null : KeyValueCoding.Impl(value);
-		        }
-		    }
-
-            /// <summary>
-            /// Get property value from object stored in a field.
-            /// </summary>
-            /// <typeparam name="TValue">type of value</typeparam>
-            /// <param name="key">property name</param>
-            /// <returns>property value</returns>
-		    public virtual TValue Get<TValue> ([CallerMemberName] string key = null)
-			{
-				if (!_kvc.ContainsKey (_value, key)) {
-					throw new KeyNotFoundException ();
-				}
-				return DoGet<TValue> (key);
-			}
-
-            /// <summary>
-            /// Override this method to customize what happens when field data accessed
-            /// </summary>
-            /// <typeparam name="TValue">property type</typeparam>
-            /// <param name="key">property name</param>
-            /// <returns>property value</returns>
-			protected virtual TValue DoGet<TValue>(string key)
-			{
-				return (TValue)_kvc.Get (_value, key);
-			}
-
-            /// <summary>
-            /// Set underlying object property value. 
-            /// <see cref="DataContext.PropertyChanged"/> will be fired if owner <see cref="DataContext"/> is not validating and raiseEvent argument is true.
-            /// </summary>
-            /// <param name="newValue">new value</param>
-            /// <param name="raiseEvent">if true then <see cref="DataContext.PropertyChanged"/> event will be fired</param>
-            /// <param name="key">property name</param>
-            // ReSharper disable once MethodOverloadWithOptionalParameter
-			public void SetValue (T newValue, bool raiseEvent = true, [CallerMemberName] string key = null)
-			{
-				if (_owner.Validating)
-					return;
-				Value = newValue;
-				if (raiseEvent)
-					_owner.RaisePropertyChanged (new PropertyChangedEventArgs (key));
-			}
-
-            /// <summary>
-            /// Set underlying object property value. 
-            /// <see cref="DataContext.PropertyChanged"/> will be fired if owner <see cref="DataContext"/> is not validating and raiseEvent argument is true.
-            /// </summary>
-            /// <typeparam name="TValue">type of value</typeparam>
-            /// <param name="property">property getter expression</param>
-            /// <param name="newValue">new value</param>
-            /// <param name="raiseEvent">if true then <see cref="DataContext.PropertyChanged"/> event will be fired</param>
-			public void Set<TValue> (Expression<Func<T,TValue>> property, TValue newValue, bool raiseEvent = true)
-			{
-			    // ReSharper disable once ExplicitCallerInfoArgument
-				Set (newValue, raiseEvent, PropertySupport.ExtractPropertyName (property));
-			}
-
-            /// <summary>
-            /// Set underlying object property value. 
-            /// <see cref="DataContext.PropertyChanged"/> will be fired if owner <see cref="DataContext"/> is not validating and raiseEvent argument is true.
-            /// </summary>
-            /// <typeparam name="TValue">type of value</typeparam>
-            /// <param name="newValue">new value</param>
-            /// <param name="raiseEvent">if true then <see cref="DataContext.PropertyChanged"/> event will be fired</param>
-            /// <param name="key">property name</param>
-			public void Set<TValue> (TValue newValue, bool raiseEvent = true, [CallerMemberName] string key = null)
-			{			
-				if (_owner.Validating)
-					return;
-				if (!_kvc.ContainsKey (_value, key)) {
-					throw new KeyNotFoundException ();
-				}
-				DoSetValue (newValue, key);
-				if (raiseEvent)
-					_owner.RaisePropertyChanged (new PropertyChangedEventArgs (key));
-			}
-
-            /// <summary>
-            /// Override this to customize what happens when underlying object property updated
-            /// </summary>
-            /// <typeparam name="TValue">type of property</typeparam>
-            /// <param name="newValue">new value</param>
-            /// <param name="key">property name</param>
-			protected virtual void DoSetValue<TValue>(TValue newValue, string key)
-			{
-				_kvc.Set (_value, key, newValue);
-			}
-
-            /// <summary>
-            /// Convert Field object in to underlying value
-            /// </summary>
-            /// <param name="field">object to convert</param>
-			public static implicit operator T(Field<T> field)
-			{
-				return field.Value;
-			}
-		}
 
         private BindingList _bindings;
         public BindingList Bindings
