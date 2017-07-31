@@ -16,11 +16,11 @@
 		<Description>Cross platform classes to enable extensible MVVM and simple data binding.</Description>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Qoden.Reflection" Version="1.0.0" />
-		<PackageReference Include="Qoden.Validation" Version="1.0.2" />
-		<PackageReference Include="Qoden.Util" Version="1.0.4" />
+		<None Include="Qoden.Binding.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<None Include="Qoden.Binding.csproj" />
+	  <ProjectReference Include="..\..\Qoden.Util\Qoden.Util\Qoden.Util.csproj" />
+	  <ProjectReference Include="..\..\Qoden.Validation\Qoden.Validation\Qoden.Validation.csproj" />
+	  <ProjectReference Include="..\..\Qoden.Reflection\Qoden.Reflection\Qoden.Reflection.csproj" />
 	</ItemGroup>
 </Project>

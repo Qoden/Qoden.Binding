@@ -1,12 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
-using Qoden.Reflection;
 using Qoden.Validation;
 
 namespace Qoden.Binding
 {
-	public static class PropertyBindingBuilder
+    public static class PropertyBindingBuilder
 	{
 		public static SourceBinding<T> Create<S, T> (S source, Expression<Func<S,T>> property)
 			where S : INotifyPropertyChanged
@@ -43,9 +42,7 @@ namespace Qoden.Binding
 
 			public SourceBinding (IPropertyBinding binding)
 			{
-				if (binding == null)
-					throw new ArgumentNullException ("binding");
-				this.binding = binding;
+                this.binding = binding ?? throw new ArgumentNullException(nameof(binding));
 			}
 
 			public IPropertyBinding Binding { get { return binding; } }
@@ -166,6 +163,22 @@ namespace Qoden.Binding
 				binding.UpdateSourceAction = Cast (After (binding.UpdateSourceAction, action));
 				return this;
 			}
+
+            public TargetBinding<T>
+            AfterUpdate(TwoWayBindingAction<T> action)
+            {
+                AfterSourceUpdate((t, s)=> action(t, s, ChangeSource.Source));
+                AfterTargetUpdate((t, s) => action(t, s, ChangeSource.Target));
+                return this;
+            }
+
+            public TargetBinding<T>
+            BeforeUpdate(TwoWayBindingAction<T> action)
+            {
+                BeforeSourceUpdate((t, s) => action(t, s, ChangeSource.Source));
+                BeforeTargetUpdate((t, s) => action(t, s, ChangeSource.Target));
+                return this;
+            }
 
 			public TargetBinding<T> OneWay ()
 			{

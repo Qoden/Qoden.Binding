@@ -70,9 +70,9 @@ namespace Qoden.Binding.Test
 
             ctx.CancelEdit();
 
-            Assert.AreNotEqual(oldIndustru, ctx.Industry);
-            Assert.AreNotEqual(oldName, ctx.Industry);
-            Assert.AreNotEqual(oldName, ctx.Industry);
+            Assert.AreEqual(oldIndustru, ctx.Industry);
+            Assert.AreEqual(oldName, ctx.Name);
+            Assert.AreEqual(oldId, ctx.Id);
         }
 
         [TestMethod]
