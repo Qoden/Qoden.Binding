@@ -15,10 +15,10 @@ namespace Qoden.Binding.Test
         public void AfterTargetUpdate()
         {
             bl.Property(model, x => x.Name).To(control.TextProperty())
-              .AfterTargetUpdate((t, s) =>
+              .AfterTargetUpdate((binding, s) =>
             {
-                target = t;
-                source = s;
+                target = (IProperty<string>)binding.Target;
+                source = (IProperty<string>)binding.Source;
             });
             bl.Bind();
 
@@ -32,11 +32,11 @@ namespace Qoden.Binding.Test
         public void AfterSourceUpdate()
         {
             bl.Property(model, x => x.Name).To(control.TextProperty())
-              .AfterSourceUpdate((t, s) =>
-            {
-                target = t;
-                source = s;
-            });
+              .AfterSourceUpdate((binding, s) =>
+              {
+                  target = (IProperty<string>)binding.Target;
+                  source = (IProperty<string>)binding.Source;
+              });
             bl.Bind();
 
             control.Text = "Hello World";

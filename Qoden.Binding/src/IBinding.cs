@@ -2,20 +2,6 @@
 
 namespace Qoden.Binding
 {
-
-	public delegate void BindingAction<T> (IProperty<T> target, IProperty<T> source);
-
-    public delegate void TwoWayBindingAction<T> (IProperty<T> target, IProperty<T> source, ChangeSource changeSource);
-
-	public delegate void SourcePropertyAction<SP> (IProperty<SP> source);
-
-    public enum ChangeSource
-    {
-        Source, Target
-    };
-
-	public delegate void BindingAction (IProperty target, IProperty source);
-
 	/// <summary>
 	/// Abstract connection (binding) between source (usually model) object and target (usually view) object.
 	/// </summary>

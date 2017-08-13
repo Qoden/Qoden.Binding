@@ -47,29 +47,29 @@ namespace Qoden.Binding
 
 			public IPropertyBinding Binding { get { return binding; } }
 
-			public void UpdateTarget (SourcePropertyAction<S> action)
+			public void UpdateTarget (PropertyBindingAction action)
 			{
-				binding.UpdateTargetAction = (t, s) => action ((IProperty<S>)s);
+                binding.UpdateTargetAction = action;
 			}
 
 			public SourceBinding<S>
-			BeforeTargetUpdate (SourcePropertyAction<S> action)
+			BeforeTargetUpdate (PropertyBindingAction action)
 			{
 				var oldAction = binding.UpdateTargetAction;
-				binding.UpdateTargetAction = new BindingAction ((t, s) => {
-					action ((IProperty<S>)s);
-					oldAction (t, s);
+				binding.UpdateTargetAction = new PropertyBindingAction ((binding, source) => {
+					action (binding, source);
+					oldAction (binding, source);
 				});
 				return this;
 			}
 
 			public SourceBinding<S>
-			AfterTargetUpdate (SourcePropertyAction<S> action)
+			AfterTargetUpdate (PropertyBindingAction action)
 			{
 				var oldAction = binding.UpdateTargetAction;
-				binding.UpdateTargetAction = new BindingAction((t, s) => {				
-					oldAction (t, s);
-					action ((IProperty<S>)s);
+				binding.UpdateTargetAction = new PropertyBindingAction((binding, change) => {				
+					oldAction (binding, change);
+                    action (binding, change);
 				});
 				return this;
 			}
@@ -99,84 +99,79 @@ namespace Qoden.Binding
 				this.binding = binding;
 			}
 
-			BindingAction Cast (BindingAction<T> action)
-			{
-				return (t, s) => action ((IProperty<T>)t, (IProperty<T>)s);
-			}
-
 			public TargetBinding<T> 
-			UpdateTarget (BindingAction<T> action)
+			UpdateTarget (PropertyBindingAction action)
 			{
-				binding.UpdateTargetAction = Cast (action);
+				binding.UpdateTargetAction = action;
 				return this;
 			}
 
 			public TargetBinding<T>
-			UpdateSource (BindingAction<T> action)
+			UpdateSource (PropertyBindingAction action)
 			{
-				binding.UpdateSourceAction = Cast (action);
+				binding.UpdateSourceAction = action;
 				return this;
 			}
 
-			BindingAction<T>
-			Before (BindingAction d, BindingAction<T> action)
+			PropertyBindingAction
+			Before (PropertyBindingAction d, PropertyBindingAction action)
 			{
-				return new BindingAction<T> ((t, s) => {
-					action (t, s);
-					d (t, s);
+				return new PropertyBindingAction ((b, c) => {
+                    action (b, c);
+					d (b, c);
 				});
 			}
 
 			public TargetBinding<T>
-			BeforeTargetUpdate (BindingAction<T> action)
+			BeforeTargetUpdate (PropertyBindingAction action)
 			{			
-				binding.UpdateTargetAction = Cast (Before (binding.UpdateTargetAction, action));
+				binding.UpdateTargetAction = Before (binding.UpdateTargetAction, action);
 				return this;
 			}
 
 			public TargetBinding<T>
-			BeforeSourceUpdate (BindingAction<T> action)
+			BeforeSourceUpdate (PropertyBindingAction action)
 			{
-				binding.UpdateSourceAction = Cast (Before (binding.UpdateSourceAction, action));
+				binding.UpdateSourceAction = Before (binding.UpdateSourceAction, action);
 				return this;
 			}
 
-			BindingAction<T>
-			After (BindingAction d, BindingAction<T> action)
+			PropertyBindingAction
+			After (PropertyBindingAction d, PropertyBindingAction action)
 			{
-				return new BindingAction<T> ((t, s) => {
+				return new PropertyBindingAction ((t, s) => {
 					d (t, s);
 					action (t, s);
 				});
 			}
 
 			public TargetBinding<T>
-			AfterTargetUpdate (BindingAction<T> action)
+			AfterTargetUpdate (PropertyBindingAction action)
 			{
-				binding.UpdateTargetAction = Cast (After (binding.UpdateTargetAction, action));
+				binding.UpdateTargetAction = After (binding.UpdateTargetAction, action);
 				return this;
 			}
 
 			public TargetBinding<T>
-			AfterSourceUpdate (BindingAction<T> action)
+			AfterSourceUpdate (PropertyBindingAction action)
 			{
-				binding.UpdateSourceAction = Cast (After (binding.UpdateSourceAction, action));
+				binding.UpdateSourceAction = After (binding.UpdateSourceAction, action);
 				return this;
 			}
 
             public TargetBinding<T>
-            AfterUpdate(TwoWayBindingAction<T> action)
+            AfterUpdate(PropertyBindingAction action)
             {
-                AfterSourceUpdate((t, s)=> action(t, s, ChangeSource.Source));
-                AfterTargetUpdate((t, s) => action(t, s, ChangeSource.Target));
+                AfterSourceUpdate(action);
+                AfterTargetUpdate(action);
                 return this;
             }
 
             public TargetBinding<T>
-            BeforeUpdate(TwoWayBindingAction<T> action)
+            BeforeUpdate(PropertyBindingAction action)
             {
-                BeforeSourceUpdate((t, s) => action(t, s, ChangeSource.Source));
-                BeforeTargetUpdate((t, s) => action(t, s, ChangeSource.Target));
+                BeforeSourceUpdate(action);
+                BeforeTargetUpdate(action);
                 return this;
             }
 
@@ -190,7 +185,7 @@ namespace Qoden.Binding
 			{
 				var old = binding.UpdateSourceAction;
 				var b = binding;
-				BindingAction initTargetAndStopUpdating = (t, s) => {
+				PropertyBindingAction initTargetAndStopUpdating = (t, s) => {
 					old (t, s);
 					b.DontUpdateSource ();
 				};

@@ -4,15 +4,21 @@ using Qoden.Validation;
 
 namespace Qoden.Binding
 {
+    public delegate void PropertyBindingAction(IPropertyBinding binding, ChangeSource changeSource);
+
+    public enum ChangeSource
+    {
+        Source, Target
+    };
 	public interface IPropertyBinding : IBinding
 	{
 		/// <summary>
-		/// Get source object property
+		/// Get source object property. Usually this is model property.
 		/// </summary>
 		IProperty Source { get; set; }
 
 		/// <summary>
-		/// Gets target object property.
+		/// Gets target object property. Usually this is view property.
 		/// </summary>
 		IProperty Target { get; set; }
 
@@ -22,7 +28,7 @@ namespace Qoden.Binding
 		/// Target.FieldValue = Source.FieldValue
 		/// </code>
 		/// </summary>
-		BindingAction UpdateTargetAction { get; set; }
+		PropertyBindingAction UpdateTargetAction { get; set; }
 
 		/// <summary>
 		/// Action to move data from Target property to Source. By default it perform 
@@ -31,7 +37,7 @@ namespace Qoden.Binding
 		/// </code>
 		/// </summary>
 		/// <value>The target to source action.</value>
-		BindingAction UpdateSourceAction { get; set; }
+		PropertyBindingAction UpdateSourceAction { get; set; }
 	}
 
 	public class PropertyBinding : IPropertyBinding
@@ -46,17 +52,17 @@ namespace Qoden.Binding
 			updateTarget = DefaultUpdateTarget;
 		}
 
-		static void DefaultUpdateSource (IProperty target, IProperty source)
+		static void DefaultUpdateSource (IPropertyBinding binding, ChangeSource change)
 		{
-			if (!source.IsReadOnly) {
-				source.Value = target.Value;
+			if (!binding.Source.IsReadOnly) {
+				binding.Source.Value = binding.Target.Value;
 			}
 		}
 
-		static void DefaultUpdateTarget (IProperty target, IProperty source)
+		static void DefaultUpdateTarget (IPropertyBinding binding, ChangeSource change)
 		{
-			if (!target.IsReadOnly) {
-				target.Value = source.Value;
+			if (!binding.Target.IsReadOnly) {
+				binding.Target.Value = binding.Source.Value;
 			}
 		}
 
@@ -110,13 +116,13 @@ namespace Qoden.Binding
 
 		bool performingAction;
 
-		void PerformAction (BindingAction action)
+		void PerformAction (PropertyBindingAction action)
 		{
 			if (Enabled && !performingAction) {
 				Assert.State (Source != null).IsTrue ("Source is not set");
 				try {
 					performingAction = true;
-					action (Target, Source);
+                    action (this, action == UpdateSourceAction ? ChangeSource.Source : ChangeSource.Target);
 				} finally {
 					performingAction = false;
 				}
@@ -145,9 +151,9 @@ namespace Qoden.Binding
 			}
 		}
 
-		BindingAction updateTarget;
+		PropertyBindingAction updateTarget;
 
-		public BindingAction UpdateTargetAction {
+		public PropertyBindingAction UpdateTargetAction {
 			get { return updateTarget; }
 			set { 
 				Assert.Argument (value, "value").NotNull ();
@@ -155,9 +161,9 @@ namespace Qoden.Binding
 			}
 		}
 
-		BindingAction updateSource;
+		PropertyBindingAction updateSource;
 
-		public BindingAction UpdateSourceAction {
+		public PropertyBindingAction UpdateSourceAction {
 			get { return updateSource; }
 			set { 
 				Assert.Argument (value, "value").NotNull ();

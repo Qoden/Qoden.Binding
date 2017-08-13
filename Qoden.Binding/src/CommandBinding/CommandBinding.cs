@@ -4,13 +4,7 @@ using Qoden.Validation;
 
 namespace Qoden.Binding
 {
-    public delegate void CommandBindingAction(IEventSource target, ICommand command);
-
-    public delegate void CommandBindingAction<T>(IEventSource target, T command)
-        where T : ICommand;
-
-    public delegate void CommandBindingAction<Target, Source>(IEventSource<Target> target, Source command)
-        where Source : ICommand;
+    public delegate void CommandBindingAction(ICommandBinding source);
 
     public interface ICommandBinding : IBinding
     {
@@ -85,10 +79,13 @@ namespace Qoden.Binding
 
         public Func<object, object> ParameterConverter { get; set; }
 
-        void DefaultUpdateTargetAction(IEventSource t, ICommand command)
+        void DefaultUpdateTargetAction(ICommandBinding binding)
         {
-            if (t != null)
-                t.SetEnabled(command.CanExecute(Parameter));
+            if (binding.Target != null)
+            {
+                var parameter = GetParameter(binding.Target.Owner, EventArgs.Empty);
+                binding.Target.SetEnabled(binding.Source.CanExecute(parameter));
+            }
         }
 
         public void Bind()
@@ -141,34 +138,40 @@ namespace Qoden.Binding
             UpdateTarget();
         }
 
+        object GetParameter(object sender, EventArgs e)
+        {
+            var parameter = Parameter;
+            if (Target?.ParameterExtractor != null && parameter == null)
+            {
+                var extractedParameter = Target.ParameterExtractor(sender, e);
+                if (ParameterConverter != null)
+                {
+                    extractedParameter = ParameterConverter(extractedParameter);
+                }
+                parameter = extractedParameter;
+            }
+            return parameter;
+        }
+
         void Target_ExecuteCommand(object sender, EventArgs e)
         {
             if (Enabled)
             {
                 var isAsyncCommand = Source is IAsyncCommand;
 
-                if (BeforeExecuteAction != null)
-                    BeforeExecuteAction(Target, Source);
+                BeforeExecuteAction?.Invoke(this);
                 if (!isAsyncCommand && CommandStarted != null)
-                    CommandStarted(Target, Source);
-                if (Target?.ParameterExtractor != null)
-                {
-                    var extractedParameter = Target.ParameterExtractor(sender, e);
-                    if (ParameterConverter != null)
-                    {
-                        extractedParameter = ParameterConverter(extractedParameter);
-                    }
-                    Parameter = extractedParameter;
-                }
+                    CommandStarted(this);
+                var parameter = GetParameter(sender, e);
                 try
                 {
                     Source.Execute(Parameter);
                 }
                 finally
                 {
-                    AfterExecuteAction?.Invoke(Target, Source);
+                    AfterExecuteAction?.Invoke(this);
                     if (!isAsyncCommand && CommandFinished != null)
-                        CommandFinished(Target, Source);
+                        CommandFinished(this);
                 }
             }
         }
@@ -180,11 +183,11 @@ namespace Qoden.Binding
             {
                 if (command.IsRunning)
                 {
-                    CommandStarted?.Invoke(Target, Source);
+                    CommandStarted?.Invoke(this);
                 }
                 else
                 {
-                    CommandFinished?.Invoke(Target, Source);
+                    CommandFinished?.Invoke(this);
                 }
             }
         }
@@ -193,7 +196,7 @@ namespace Qoden.Binding
         {
             if (Enabled && UpdateTargetAction != null)
             {
-                UpdateTargetAction(Target, Source);
+                UpdateTargetAction(this);
             }
         }
 

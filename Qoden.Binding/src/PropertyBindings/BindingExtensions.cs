@@ -5,7 +5,7 @@ namespace Qoden.Binding
 
 	public static class BindingExtensions
 	{
-		static void DoNotUpdate (IProperty target, IProperty source)
+		static void DoNotUpdate (IPropertyBinding binding, ChangeSource source)
 		{
 		}
 

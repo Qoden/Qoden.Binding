@@ -4,7 +4,6 @@ namespace Qoden.Binding
 {
 	public static class CommandBindingBuilder
 	{
-
 		public struct SourceBuilder<T>
 			where T: ICommand
 		{
@@ -18,60 +17,32 @@ namespace Qoden.Binding
 
 			internal SourceBuilder (ICommandBinding binding)
 			{
-				if (binding == null)
-					throw new ArgumentNullException ("binding");
-				Binding = binding;
+                Binding = binding ?? throw new ArgumentNullException("binding");
 			}
 
-			public SourceBuilder<T> BeforeUpdateTarget (CommandBindingAction<T> action)
+			public SourceBuilder<T> BeforeExecute (CommandBindingAction action)
 			{
-				var old = Binding.UpdateTargetAction;
-				Binding.UpdateTargetAction = (t, s) => {
-					action (t, (T)s);
-					old (t, s);
-				};
+				Binding.BeforeExecuteAction = action;
 				return this;
 			}
 
-			public SourceBuilder<T> AfterUpdateTarget (CommandBindingAction<T> action)
+			public SourceBuilder<T> AfterExecute (CommandBindingAction action)
 			{
-				var old = Binding.UpdateTargetAction;
-				Binding.UpdateTargetAction = (t, s) => {
-					old (t, s);
-					action (t, (T)s);
-				};
+				Binding.AfterExecuteAction = action;
 				return this;
 			}
 
-			public SourceBuilder<T> UpdateTarget (CommandBindingAction<T> action)
-			{
-				Binding.UpdateTargetAction = action != null ? new CommandBindingAction ((t, s) => action (t, (T)s)) : null;
-				return this;
-			}
-
-			public SourceBuilder<T> BeforeExecute (CommandBindingAction<T> action)
-			{
-				Binding.BeforeExecuteAction = (t, s) => action (t, (T)s);
-				return this;
-			}
-
-			public SourceBuilder<T> AfterExecute (CommandBindingAction<T> action)
-			{
-				Binding.AfterExecuteAction = (t, s) => action (t, (T)s);
-				return this;
-			}
-
-			public SourceBuilder<T> WhenStarted (CommandBindingAction<T> action)
+			public SourceBuilder<T> WhenStarted (CommandBindingAction action)
 			{
 				var b = (IAsyncCommandBinding)Binding;
-				b.CommandStarted = (t, s) => action (t, (T)s);
+				b.CommandStarted = action;
 				return this;
 			}
 
-			public SourceBuilder<T> WhenFinished (CommandBindingAction<T> action)
+			public SourceBuilder<T> WhenFinished (CommandBindingAction action)
 			{
 				var b = (IAsyncCommandBinding)Binding;
-				b.CommandFinished = (t, s) => action (t, (T)s);
+				b.CommandFinished = action;
 				return this;
 			}
 
@@ -86,84 +57,8 @@ namespace Qoden.Binding
 				Binding.Target = source;
 				Binding.Parameter = parameter;
 			}
-
-			public TargetBuilder<Target, T> To<Target> (IEventSource<Target> source, object parameter = null)
-			{
-				Binding.Target = source;
-				Binding.Parameter = parameter;
-				return new TargetBuilder<Target, T> (Binding);
-			}
-
+		
             public SourceBuilder<T> ParameterConverter (Func<object, object> parameterConverter)
-            {
-                Binding.ParameterConverter = parameterConverter;
-                return this;
-            }
-        }
-
-		public struct TargetBuilder<T, S>
-			where S : ICommand
-		{
-			public readonly ICommandBinding Binding;
-
-			internal TargetBuilder (ICommandBinding binding)
-			{
-				Binding = binding;
-			}
-
-			public TargetBuilder<T, S> BeforeUpdateTarget (CommandBindingAction<T, S> action)
-			{
-				var old = Binding.UpdateTargetAction;
-				Binding.UpdateTargetAction = (t, s) => {
-					action ((IEventSource<T>)t, (S)s);
-					old (t, s);
-				};
-				return this;
-			}
-
-			public TargetBuilder<T, S> AfterUpdateTarget (CommandBindingAction<T, S> action)
-			{
-				var old = Binding.UpdateTargetAction;
-				Binding.UpdateTargetAction = (t, s) => {
-					old (t, s);
-					action ((IEventSource<T>)t, (S)s);
-				};
-				return this;
-			}
-
-			public TargetBuilder<T, S> UpdateTarget (CommandBindingAction<T,S> action)
-			{
-				Binding.UpdateTargetAction = (t, s) => action ((IEventSource<T>)t, (S)s);
-				return this;
-			}
-
-			public TargetBuilder<T, S> BeforeExecute (CommandBindingAction<T, S> action)
-			{
-				Binding.BeforeExecuteAction = (t, s) => action ((IEventSource<T>)t, (S)s);
-				return this;
-			}
-
-			public TargetBuilder<T, S> AfterExecute (CommandBindingAction<T, S> action)
-			{
-				Binding.AfterExecuteAction = (t, s) => action ((IEventSource<T>)t, (S)s);
-				return this;
-			}
-
-			public TargetBuilder<T, S> WhenStarted (CommandBindingAction<T, S> action)
-			{
-				var b = (IAsyncCommandBinding)Binding;
-				b.CommandStarted = (t, s) => action ((IEventSource<T>)t, (S)s);
-				return this;
-			}
-
-			public TargetBuilder<T, S> WhenFinished (CommandBindingAction<T, S> action)
-			{
-				var b = (IAsyncCommandBinding)Binding;
-				b.CommandFinished = (t, s) => action ((IEventSource<T>)t, (S)s);
-				return this;
-			}
-
-            public TargetBuilder<T, S> ParameterConverter (Func<object, object> parameterConverter)
             {
                 Binding.ParameterConverter = parameterConverter;
                 return this;
@@ -177,8 +72,6 @@ namespace Qoden.Binding
 			list.Add (builder.Binding);
 			return builder;
 		}
-
-
 	}
 
 }

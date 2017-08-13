@@ -31,7 +31,8 @@ namespace Qoden.Binding
 		void SetEnabled (bool enabled);
 
         /// <summary>
-        /// Func to extract Parameter from Target EventArgs
+        /// Func to extract Parameter from Target EventArgs.
+        /// EventArgs could be EventArgs.Empty or corresponding event arguments.
         /// </summary>
         Func<object, EventArgs, object> ParameterExtractor { get; set; }
     }
